@@ -1,0 +1,25 @@
+[2025-11-23 16:15:49] [INFO] Starting backup of /root/test_backup_source
+[2025-11-23 16:15:49] [INFO] Destination: /root/backups/test_backup_20251123_161549.tar.gz
+[2025-11-23 16:15:49] [SUCCESS] Backup completed successfully
+[2025-11-23 16:15:49] [INFO] Backup size: 4.0K
+[2025-11-23 16:15:49] [INFO] Cleaning up old backups, keeping last 5
+[2025-11-23 16:16:49] [INFO] Starting backup of /root/test_backup_source
+[2025-11-23 16:16:49] [INFO] Destination: /root/backups/test_backup_20251123_161649.tar.gz
+[2025-11-23 16:16:49] [SUCCESS] Backup completed successfully
+[2025-11-23 16:16:49] [INFO] Backup size: 4.0K
+[2025-11-23 16:16:49] [INFO] Cleaning up old backups, keeping last 5
+[2025-11-23 16:16:57] [INFO] Starting backup of /root/test_backup_source
+[2025-11-23 16:16:57] [INFO] Destination: /root/backups/test_backup_20251123_161657.tar.gz
+[2025-11-23 16:16:57] [SUCCESS] Backup completed successfully
+[2025-11-23 16:16:57] [INFO] Backup size: 4.0K
+[2025-11-23 16:16:57] [INFO] Cleaning up old backups, keeping last 5
+[2025-11-23 16:17:08] [INFO] Starting backup of /root/test_backup_source
+[2025-11-23 16:17:08] [INFO] Destination: /root/backups/test_backup_20251123_161708.tar.gz
+[2025-11-23 16:17:08] [SUCCESS] Backup completed successfully
+[2025-11-23 16:17:08] [INFO] Backup size: 4.0K
+[2025-11-23 16:17:08] [INFO] Cleaning up old backups, keeping last 5
+[2025-11-23 16:17:27] [INFO] Starting backup of /root/wisecow-devops
+[2025-11-23 16:17:27] [INFO] Destination: /root/backups/wisecow_project_20251123_161727.tar.gz
+[2025-11-23 16:17:27] [SUCCESS] Backup completed successfully
+[2025-11-23 16:17:27] [INFO] Backup size: 36K
+[2025-11-23 16:17:27] [INFO] Cleaning up old backups, keeping last 5
