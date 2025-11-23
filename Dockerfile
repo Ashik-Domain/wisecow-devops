@@ -1,17 +1,16 @@
-FROM debian:bookworm-slim
-
+FROM ubuntu:22.04
+# Install prerequisites
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      netcat-openbsd fortune-mod cowsay bash ca-certificates wget && \
+    apt-get install -y fortune-mod cowsay netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
+# Set PATH for cowsay
+ENV PATH="/usr/games:${PATH}"
+
 WORKDIR /app
-COPY wisecow.sh /app/wisecow.sh
-RUN chmod +x /app/wisecow.sh
+COPY wisecow.sh .
+RUN chmod +x wisecow.sh
 
 EXPOSE 4499
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -q --spider http://127.0.0.1:4499/ || exit 1
-
-CMD ["/app/wisecow.sh"]
+CMD ["./wisecow.sh"]
