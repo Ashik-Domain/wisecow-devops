@@ -1,0 +1,43 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: wisecow-security-policy
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: wisecow
+  
+  process:
+    matchPaths:
+    - path: /usr/games/cowsay
+      action: Allow
+    - path: /usr/games/fortune
+      action: Allow
+    - path: /bin/bash
+      action: Allow
+    - path: /usr/bin/nc
+      action: Allow
+  
+  file:
+    matchDirectories:
+    - dir: /app/
+      recursive: true
+      action: Allow
+    - dir: /tmp/
+      recursive: true
+      action: Allow
+    matchPaths:
+    - path: /etc/passwd
+      action: Block
+    - path: /etc/shadow
+      action: Block
+  
+  network:
+    matchProtocols:
+    - protocol: tcp
+      action: Allow
+    - protocol: udp
+      action: Block
+  
+  action: Block
