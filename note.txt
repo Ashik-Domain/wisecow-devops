@@ -13,4 +13,8 @@ How many replicas (copies) of the wisecow app should run?
 What port does the wisecow app use? (Hint: check wisecow.sh)
 What Docker image will you use? (Will it be from Docker Hub or a local image?)
 
+## Note on Testing
+- Tested on AWS EC2 t2.micro with 1 replica due to CPU constraints
+- Production deployment should use `replicas: 2` for high availability
+- Recommended instance: t2.small or higher for full functionality
 
