@@ -25,10 +25,6 @@ This KubeArmor policy enforces zero-trust security for the Wisecow application.
 - **Allowed:** TCP connections only
 - **Blocked:** UDP traffic
 
-## Testing Notes
-Due to resource constraints on t2.micro instance, this policy was created but full testing with KubeArmor requires:
-- Minimum 2 vCPUs (t2.small or higher)
-- 2GB+ RAM
 
 ## Installation (for reference)
 ```bash
