@@ -418,7 +418,7 @@ wisecow-devops/
 ├── screenshots/                      # Project demonstration screenshots
 ├── Dockerfile                        # Container image definition
 ├── wisecow.sh                        # Main application script
-├── LICENSE                           # MIT License
+├── LICENSE                           # Apache License
 └── README.md                         # Assessment file
 └── Document.md                       # This file
 ```
@@ -547,12 +547,6 @@ kubectl describe kubearmorpolicy wisecow-security-policy
 - **KubeArmor Team** for excellent security documentation
 - **DevOps Community** for best practices and guidance
 - **Open Source Contributors** for the amazing tools and libraries
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
