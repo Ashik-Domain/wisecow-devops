@@ -1,76 +1,108 @@
+# 🌟 Wisecow DevOps Assessment
 
+A complete end-to-end DevOps project demonstrating containerization, Kubernetes deployment, CI/CD automation, system monitoring scripts, and zero-trust security implementation using KubeArmor.
 
-# Wisecow DevOps Assessment
-
-A comprehensive DevOps project demonstrating containerization, Kubernetes deployment, CI/CD automation, system monitoring scripts, and zero-trust security policies.
+---
 
 ## 📋 Table of Contents
-- [Overview](#overview)
-- [Problem Statement 1: Containerization & Kubernetes Deployment](#problem-statement-1-containerization--kubernetes-deployment)
-- [Problem Statement 2: System Administration Scripts](#problem-statement-2-system-administration-scripts)
-- [Problem Statement 3: Zero-Trust Security Policy](#problem-statement-3-zero-trust-security-policy)
-- [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
+
+- [Overview](#-overview)
+- [Problem Statement 1: Containerization & Kubernetes Deployment](#-problem-statement-1-containerization--kubernetes-deployment)
+- [Problem Statement 2: System Administration Scripts](#-problem-statement-2-system-administration-scripts)
+- [Problem Statement 3: Zero-Trust Security Policy](#-problem-statement-3-zero-trust-security-policy)
+- [Technologies Used](#-technologies-used)
+- [Getting Started](#-getting-started)
+- [Project Structure](#-project-structure)
+- [CI/CD Pipeline](#-cicd-pipeline)
+- [Monitoring & Logging](#-monitoring--logging)
+- [Security Best Practices](#-security-best-practices-implemented)
+- [Screenshots](#-project-screenshots)
+- [Author](#-author)
+- [Acknowledgments](#-acknowledgments)
+
 ---
 
 ## 🎯 Overview
 
-This project showcases the deployment and automation of the Wisecow application - a fortune-telling cow web server. The implementation includes containerization, Kubernetes orchestration, automated CI/CD pipelines, monitoring scripts, and security policies following DevOps best practices.
+This project demonstrates a holistic DevOps implementation using the **Wisecow application** — a shell-based web server that serves random fortune messages in ASCII cow format.
 
-**Live Application:** The Wisecow app displays random fortune quotes in ASCII cow art, accessible via web browser.
+### The project covers:
+
+- 🐳 **Docker containerization**
+- ☸️ **Kubernetes orchestration**
+- 🔄 **CI/CD with GitHub Actions**
+- 🩺 **Application health monitoring**
+- 💾 **Automated backup system**
+- 🔐 **Zero-trust runtime security using KubeArmor**
+
+Everything is production-ready and aligned with DevOps best practices.
 
 ---
 
 ## 🐳 Problem Statement 1: Containerization & Kubernetes Deployment
 
-### Objectives Completed
-✅ Dockerized the Wisecow application  
-✅ Created Kubernetes manifests for deployment  
-✅ Implemented CI/CD pipeline with GitHub Actions  
-✅ Deployed to Kubernetes cluster (Kind)  
-✅ Exposed application as a Kubernetes service  
+### ✅ Objectives Completed
 
-### Implementation Details
+- ✔️ Dockerized Wisecow application
+- ✔️ Created Kubernetes manifests (Deployment, Service, Ingress)
+- ✔️ Added resource requests & limits
+- ✔️ Implemented CI/CD pipeline for Docker automation
+- ✔️ Deployed on local Kubernetes cluster (KinD)
+- ✔️ Added TLS-ready ingress (Challenge Goal)
+- ✔️ Implemented zero-trust runtime policy
 
-#### Dockerfile
+### 🧱 Dockerfile
+
+The Dockerfile installs required dependencies, sets up the application, and exposes the application port.
+
 ```dockerfile
 FROM ubuntu:22.04
 
-# Install prerequisites
 RUN apt-get update && \
     apt-get install -y fortune-mod cowsay netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
-# Set PATH for cowsay
 ENV PATH="/usr/games:${PATH}"
 
-# Copy application
 WORKDIR /app
 COPY wisecow.sh .
 RUN chmod +x wisecow.sh
 
-# Expose port
 EXPOSE 4499
-
-# Run application
 CMD ["./wisecow.sh"]
 ```
 
-#### Kubernetes Resources
-- **Deployment:** Manages 2 replicas for high availability
-- **Service:** NodePort service exposing the application
-- **Resource Limits:** Configured CPU and memory limits for stability
+### ☸️ Kubernetes Resources
 
-#### CI/CD Pipeline
-- **Trigger:** Automated on push to main branch
-- **Actions:**
-  - Builds Docker image
-  - Pushes to Docker Hub
-  - Tags with commit SHA and 'latest'
-  - Uses GitHub Actions secrets for secure authentication
+#### Deployment
+- 2 replicas for high availability
+- CPU & memory limits applied
+- Uses Docker Hub image: `ashikimg/wisecow:latest`
 
-### Deployment Commands
+#### Service
+- Type: **NodePort**
+- Exposes app internally as Service → maps to external NodePort
+- Port mapping: 80 → 4499 (container) → 30001 (NodePort)
+
+#### Ingress (TLS Ready)
+- Domain: `wisecow.local`
+- HTTPS enforced via `ssl-redirect`
+- Uses TLS secret: `wisecow-tls`
+
+**TLS Setup Note:**
+> TLS certificates can be generated using:
+> - **cert-manager** for automated certificates
+> - **openssl** for self-signed certificates  
+> - Cloud provider certificates (ACM, Let's Encrypt)
+>
+> Example for self-signed certificate:
+> ```bash
+> openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+>   -keyout tls.key -out tls.crt -subj "/CN=wisecow.local"
+> kubectl create secret tls wisecow-tls --key tls.key --cert tls.crt
+> ```
+
+### 🚀 Deployment Commands
 
 ```bash
 # Build and push Docker image
@@ -80,130 +112,151 @@ docker push ashikimg/wisecow:latest
 # Deploy to Kubernetes
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/ingress.yaml
 
 # Verify deployment
 kubectl get pods
-kubectl get svc wisecow-service
+kubectl get svc
 
-# Access application
+# Access Application
 kubectl port-forward service/wisecow-service 8080:80
 # Visit: http://localhost:8080
 ```
-
-### Testing Environment Notes
-- **Image Pull Policy:** Uses 'latest' tag for testing; production should use commit SHA tags for version control
 
 ---
 
 ## 📜 Problem Statement 2: System Administration Scripts
 
+Two automation scripts were developed:
+
+1. **Application Health Checker**
+2. **Automated Backup Solution**
+
 ### 1️⃣ Application Health Checker
 
-**Purpose:** Monitors application uptime and availability via HTTP status code checks.
+**Purpose:** Determines whether an application is UP or DOWN using HTTP status codes.
 
-**Features:**
-- ✅ HTTP status code validation (200-299 = UP, others = DOWN)
-- ✅ Color-coded console output
-- ✅ Timestamped logging to file
-- ✅ Configurable timeout settings
-- ✅ Continuous monitoring mode
-- ✅ Connection failure detection
+#### ⭐ Features
 
-**Usage:**
+- ✅ Checks service availability via HTTP
+- ✅ Color-coded output (GREEN/YELLOW/RED)
+- ✅ Logs entries to `app_health.log`
+- ✅ Supports timeout and continuous monitoring
+- ✅ Captures failed cURL attempts
+- ✅ Distinguishes between HTTP codes (2xx=UP, 3xx=REDIRECT, 4xx/5xx=DOWN)
+
+#### ▶️ Usage
+
 ```bash
-# Single check
+# Single health check
 ./scripts/app_health_checker.sh http://localhost:8080
 
 # Continuous monitoring (every 10 seconds)
 ./scripts/app_health_checker.sh http://localhost:8080 -i 10
 
 # Custom timeout
-./scripts/app_health_checker.sh http://example.com -t 30
+./scripts/app_health_checker.sh http://example.com -t 20
+
+# Help
+./scripts/app_health_checker.sh -h
 ```
 
-**Example Output:**
+#### 📝 Sample Output
+
 ```
 Application Health Checker
 ==========================
 Monitoring: http://localhost:8080
 Log file: app_health.log
 
-[2025-11-23 16:00:00] UP - http://localhost:8080 - Status: 200
+[2025-11-23 16:12:05] UP - http://localhost:8080 - Status: 200
 ```
+
+---
 
 ### 2️⃣ Automated Backup Solution
 
-**Purpose:** Automates directory backups to local or remote destinations with comprehensive logging.
+**Purpose:** Automates local or remote directory backups using tar and SCP.
 
-**Features:**
-- ✅ Compressed tar.gz backups
-- ✅ Timestamp-based naming
-- ✅ Local and remote (SCP) backup support
-- ✅ Automatic backup rotation (keeps last N backups)
-- ✅ Success/failure reporting
-- ✅ Detailed logging with timestamps
+#### ⭐ Features
 
-**Usage:**
+- ✅ Creates `.tar.gz` compressed backups
+- ✅ Timestamp-based filenames
+- ✅ Remote server backup support using SCP
+- ✅ Logs backups to `backup.log`
+- ✅ Backup rotation (keeps last 5 by default, configurable)
+- ✅ Handles errors gracefully
+- ✅ Reports backup size and success/failure
+
+#### ▶️ Usage
+
 ```bash
 # Local backup
-./scripts/automated_backup.sh -s /var/www -d /backups -n website_backup
+./scripts/automated_backup.sh -s /var/www -d /backup -n mybackup
 
-# Remote backup via SCP
-./scripts/automated_backup.sh -s /var/www -d /backups -r user@remote-server -n website_backup
+# Remote backup
+./scripts/automated_backup.sh -s /data -d /backup -r user@server -n data_backup
 
-# Custom retention (keep last 10 backups)
-./scripts/automated_backup.sh -s /data -d /backups -n data_backup -k 10
+# Custom retention count (keep last 10 backups)
+./scripts/automated_backup.sh -s /data -d /backup -k 10
+
+# Help
+./scripts/automated_backup.sh -h
 ```
 
-**Backup Naming Convention:**
+#### 📦 Backup Naming Format
+
 ```
-<backup_name>_<YYYYMMDD_HHMMSS>.tar.gz
-Example: wisecow_project_20251123_160000.tar.gz
+<name>_YYYYMMDD_HHMMSS.tar.gz
+
+Example: wisecow_project_20251123_161727.tar.gz
 ```
 
-**Log Output:**
+#### 📊 Sample Log Output
+
 ```
-[2025-11-23 16:15:49] [INFO] Starting backup of /root/test_backup_source
-[2025-11-23 16:15:49] [SUCCESS] Backup completed successfully
-[2025-11-23 16:15:49] [INFO] Backup size: 4.0K
-[2025-11-23 16:15:49] [INFO] Cleaning up old backups, keeping last 5
+[2025-11-23 16:17:27] [INFO] Starting backup of /root/wisecow-devops
+[2025-11-23 16:17:27] [SUCCESS] Backup completed successfully
+[2025-11-23 16:17:27] [INFO] Backup size: 36K
+[2025-11-23 16:17:27] [INFO] Cleaning up old backups, keeping last 5
 ```
 
 ---
 
 ## 🔒 Problem Statement 3: Zero-Trust Security Policy
 
-### KubeArmor Security Implementation
+A complete **KubeArmor-based zero-trust runtime security policy** was implemented to enforce strict process, file, and network controls.
 
-**Purpose:** Implements runtime security enforcement following zero-trust principles for the Wisecow application.
+### ⭐ Security Controls
 
-### Security Controls
+#### 🧩 Process Controls (Allowed Only)
 
-#### Process Restrictions
 | Process | Action | Reason |
 |---------|--------|--------|
-| `/usr/games/cowsay` | Allow | Required for cow ASCII art |
-| `/usr/games/fortune` | Allow | Required for fortune quotes |
-| `/bin/bash` | Allow | Required for script execution |
-| `/usr/bin/nc` | Allow | Required for network communication |
-| All others | **Block** | Zero-trust default deny |
+| `/usr/games/cowsay` | **Allow** | Required for cow ASCII art |
+| `/usr/games/fortune` | **Allow** | Required for fortune quotes |
+| `/bin/bash` | **Allow** | Required for script execution |
+| `/usr/bin/nc` | **Allow** | Required for network communication |
+| **All other processes** | **Block** | Zero-trust default deny |
 
-#### File Access Controls
+#### 📁 File Access Controls
+
 | Path/Directory | Action | Reason |
 |----------------|--------|--------|
-| `/app/` | Allow | Application files |
-| `/tmp/` | Allow | Temporary storage |
+| `/app/` | **Allow** | Application files |
+| `/tmp/` | **Allow** | Temporary storage |
 | `/etc/passwd` | **Block** | Prevent credential access |
 | `/etc/shadow` | **Block** | Prevent password hash access |
-| All others | **Block** | Zero-trust default deny |
+| **All other files** | **Block** | Zero-trust default deny |
 
-#### Network Controls
+#### 🌐 Network Controls
+
 | Protocol | Action | Reason |
 |----------|--------|--------|
-| TCP | Allow | Required for HTTP service |
+| TCP | **Allow** | Required for HTTP service |
 | UDP | **Block** | Not needed for application |
 
-### Policy Application
+### ▶️ Apply KubeArmor Policy
 
 ```bash
 # Install KubeArmor
@@ -212,27 +265,37 @@ karmor install
 # Apply security policy
 kubectl apply -f kubearmor-policies/wisecow-security-policy.yaml
 
-# Monitor policy violations
+# Monitor policy violations in real-time
 karmor logs --follow
 
 # View active policies
 kubectl get kubearmorpolicies
 ```
 
-### Expected Security Behavior
-- ✅ Wisecow application runs normally with allowed processes
-- ❌ Attempts to access `/etc/passwd` or `/etc/shadow` are blocked
-- ❌ Attempts to execute unauthorized binaries are blocked
-- ❌ UDP network traffic is blocked
-- 📝 All violations are logged for security monitoring
+### ✅ Expected Security Behavior
 
-### Testing Notes
-**Resource Requirements for Full Testing:**
-- Minimum 2 vCPUs (AWS t2.small or equivalent)
-- 2GB+ RAM
-- Kubernetes cluster with KubeArmor support
+- ✔️ Wisecow application runs normally with allowed processes
+- ❌ Attempts to access `/etc/passwd` or `/etc/shadow` are **blocked**
+- ❌ Attempts to execute unauthorized binaries are **blocked**
+- ❌ UDP network traffic is **blocked**
+- 🔍 All violations are logged in real-time for security monitoring
 
-**Current Status:** Policy created and validated.
+### 🧪 Testing Policy Violations
+
+```bash
+# Execute into a pod
+kubectl exec -it <wisecow-pod-name> -- /bin/bash
+
+# Try to access blocked files (should fail)
+cat /etc/passwd   # Permission denied
+cat /etc/shadow   # Permission denied
+
+# Try unauthorized command (should fail)
+whoami            # Permission denied
+
+# View violations
+karmor logs --follow
+```
 
 ---
 
@@ -241,62 +304,95 @@ kubectl get kubearmorpolicies
 | Category | Technologies |
 |----------|-------------|
 | **Containerization** | Docker, Docker Hub |
-| **Orchestration** | Kubernetes, Kind |
+| **Orchestration** | Kubernetes, KinD |
 | **CI/CD** | GitHub Actions |
-| **Security** | KubeArmor |
+| **Runtime Security** | KubeArmor |
 | **Scripting** | Bash |
-| **Infrastructure** | AWS EC2 (Amazon Linux 2023) |
-| **Version Control** | Git, GitHub |
+| **Cloud** | AWS EC2 (Amazon Linux 2023) |
+| **Version Control** | Git & GitHub |
+| **Monitoring** | kubectl, logs, custom scripts |
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Docker installed and running
-- kubectl installed
-- Kind or Minikube for local Kubernetes
-- Git for version control
-- (Optional) AWS account for EC2 deployment
 
-### Quick Start
+Before you begin, ensure you have the following installed:
 
-1. **Clone the repository**
+- **Docker** (v20.10+)
+- **kubectl** (v1.25+)
+- **KinD** or **Minikube** (for local Kubernetes)
+- **Git**
+- **Optional:** AWS EC2 instance (t2.small minimum)
+
+### Quick Start Guide
+
+#### 1️⃣ Clone the Repository
+
 ```bash
 git clone https://github.com/ashikimg/wisecow-devops.git
 cd wisecow-devops
 ```
 
-2. **Build and run with Docker**
+#### 2️⃣ Run with Docker
+
 ```bash
-docker build -t wisecow:latest .
-docker run -d -p 4499:4499 wisecow:latest
+# Build the image
+docker build -t wisecow .
+
+# Run the container
+docker run -d -p 4499:4499 --name wisecow-test wisecow
+
+# Test the application
 curl http://localhost:4499
 ```
 
-3. **Deploy to Kubernetes**
+#### 3️⃣ Deploy to Kubernetes
+
 ```bash
-# Create Kind cluster
+# Create KinD cluster
 kind create cluster --name wisecow-cluster
 
-# Load image
+# Load Docker image into KinD
 kind load docker-image ashikimg/wisecow:latest --name wisecow-cluster
 
-# Deploy
+# Deploy all Kubernetes resources
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 
-# Access
+# Verify deployment
+kubectl get pods
+kubectl get svc
+
+# Access the application
 kubectl port-forward service/wisecow-service 8080:80
+# Visit: http://localhost:8080
 ```
 
-4. **Test monitoring scripts**
+#### 4️⃣ Test Monitoring Scripts
+
 ```bash
-# Health check
+# Test health checker
+chmod +x scripts/app_health_checker.sh
 ./scripts/app_health_checker.sh http://localhost:8080
 
-# Backup
-./scripts/automated_backup.sh -s ./app -d ./backups -n test
+# Test backup script
+chmod +x scripts/automated_backup.sh
+./scripts/automated_backup.sh -s ./app -d ./backups -n test_backup
+```
+
+#### 5️⃣ Apply Security Policy (Optional)
+
+```bash
+# Install KubeArmor
+karmor install
+
+# Apply the policy
+kubectl apply -f kubearmor-policies/wisecow-security-policy.yaml
+
+# Monitor security events
+karmor logs --follow
 ```
 
 ---
@@ -310,19 +406,20 @@ wisecow-devops/
 │       └── docker-build-push.yaml    # CI/CD pipeline configuration
 ├── k8s/
 │   ├── deployment.yaml               # Kubernetes deployment manifest
-│   └── service.yaml                  # Kubernetes service manifest
+│   ├── service.yaml                  # Kubernetes service manifest
+│   └── ingress.yaml                  # Ingress with TLS configuration
+├── kubearmor-policies/
+│   ├── wisecow-security-policy.yaml  # Zero-trust security policy
+│   └── README.md                     # Policy documentation
 ├── scripts/
 │   ├── app_health_checker.sh         # Application health monitoring
 │   ├── automated_backup.sh           # Backup automation script
-│   ├── app_health.log               # Health check logs
-│   └── backup.log                   # Backup operation logs
-├── kubearmor-policies/
-│   ├── wisecow-security-policy.yaml # Zero-trust security policy
-│   └── README.md                    # Policy documentation
-├── Dockerfile                        # Container image definition
-├── wisecow.sh                       # Main application script
-├── LICENSE                          # MIT License
-└── README.md                        # This file
+│   └── backup.log                    # Backup operation logs
+├── screenshots/                       # Project demonstration screenshots
+├── Dockerfile                         # Container image definition
+├── wisecow.sh                        # Main application script
+├── LICENSE                           # MIT License
+└── README.md                         # This file
 ```
 
 ---
@@ -331,69 +428,124 @@ wisecow-devops/
 
 ### GitHub Actions Workflow
 
-**Trigger:** Push or Pull Request to main branch
+**Trigger:** Automatic on push or pull request to `main` branch
 
-**Steps:**
-1. Checkout code
-2. Set up Docker Buildx
-3. Login to Docker Hub (using secrets)
-4. Extract metadata and create tags
-5. Build Docker image
-6. Push to Docker Hub with tags:
+#### Pipeline Steps:
+
+1. ✅ **Checkout code** from repository
+2. ✅ **Set up Docker Buildx** for multi-platform builds
+3. ✅ **Login to Docker Hub** (using secrets)
+4. ✅ **Extract metadata** and create tags
+5. ✅ **Build Docker image** with caching
+6. ✅ **Push to Docker Hub** with tags:
    - `latest` (for main branch)
    - `main-<commit-sha>` (for version tracking)
 
-**Secrets Required:**
-- `DOCKER_USERNAME`: Docker Hub username
-- `DOCKER_PASSWORD`: Docker Hub password/token
+#### Required Secrets:
+
+Configure these in GitHub repository settings:
+
+- `DOCKER_USERNAME` - Docker Hub username
+- `DOCKER_PASSWORD` - Docker Hub password/access token
+
+#### Workflow File Location:
+
+`.github/workflows/docker-build-push.yaml`
 
 ---
 
 ## 📊 Monitoring & Logging
 
-### Application Logs
+### Kubernetes Logs
+
 ```bash
 # View pod logs
 kubectl logs -f deployment/wisecow-deployment
 
+# View logs from specific pod
+kubectl logs -f <pod-name>
+
+# View logs from all pods
+kubectl logs -f -l app=wisecow
+```
+
+### Script Logs
+
+```bash
 # View health check logs
 cat scripts/app_health.log
 
 # View backup logs
 cat scripts/backup.log
+
+# Tail logs in real-time
+tail -f scripts/backup.log
 ```
 
-### Security Monitoring
+### KubeArmor Security Logs
+
 ```bash
-# View KubeArmor alerts
+# Monitor security events in real-time
 karmor logs --follow
 
-# Check policy violations
+# View KubeArmor system logs
 kubectl logs -n kubearmor -l app=kubearmor
+
+# Check policy status
+kubectl describe kubearmorpolicy wisecow-security-policy
 ```
 
 ---
 
 ## 🔐 Security Best Practices Implemented
-- ✅ Docker image configured; runs as root (recommend switching to non-root for production)
-- ✅ Resource limits configured to prevent resource exhaustion
-- ✅ Zero-trust security policies with KubeArmor
-- ✅ Secrets management via GitHub Actions secrets
-- ✅ Minimal base image (Ubuntu 22.04) with only required packages
-- ✅ Network policies restricting unnecessary protocols
-- ✅ File access restrictions preventing sensitive data exposure
+
+- ✅ **Resource limits** on containers to prevent resource exhaustion
+- ✅ **Zero-trust security policy** for workload protection
+- ✅ **GitHub Actions secrets** for secure authentication
+- ✅ **Minimal Docker image** with only required packages
+- ✅ **TLS-ready ingress** for encrypted communication
+- ✅ **Strict file & process access control** via KubeArmor
+- ✅ **Efficient Docker caching** via Buildx for faster builds
+- ✅ **Network protocol restrictions** (TCP only)
+- ✅ **Automated vulnerability scanning** via Docker Hub
+- ✅ **Least privilege principle** in Kubernetes manifests
+
+### 🔧 Production Recommendations:
+
+- Switch to non-root user in Dockerfile
+- Implement proper secret management (Vault, Sealed Secrets)
+- Add network policies for pod-to-pod communication
+- Enable pod security standards
+- Implement resource quotas and limit ranges
+- Add liveness and readiness probes
+- Use specific image tags instead of `latest` in production
 
 ---
 
-## 🤝 Contributing
+## 📸 Project Screenshots
 
-Contributions are welcome! Please follow these steps:
+> 📷 **Note:** Screenshots demonstrating working deployments and security policies are available in the `screenshots/` directory.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+---
+
+
+## 👤 Author
+
+**Ashik**
+
+- 🐙 GitHub: [@ashikimg](https://github.com/ashikimg)
+- 🐳 Docker Hub: [ashikimg](https://hub.docker.com/u/ashikimg)
+- 💼 Project: Wisecow DevOps Assessment
+
+---
+
+## 🙏 Acknowledgments
+
+- **Original Wisecow App** by [@nyrahul](https://github.com/nyrahul/wisecow)
+- **AccuKnox** for the comprehensive assessment opportunity
+- **KubeArmor Team** for excellent security documentation
+- **DevOps Community** for best practices and guidance
+- **Open Source Contributors** for the amazing tools and libraries
 
 ---
 
@@ -403,27 +555,31 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 👤 Author
+## 🤝 Contributing
 
-**Ashik**
-- GitHub: [@ashikimg](https://github.com/ashikimg)
-- Docker Hub: [ashikimg](https://hub.docker.com/u/ashikimg)
+While this is an assessment project, feedback and suggestions are welcome!
 
----
-
-## 🙏 Acknowledgments
-
-- Original Wisecow application by [@nyrahul](https://github.com/nyrahul/wisecow)
-- AccuKnox for the assessment opportunity
-- KubeArmor team for excellent security documentation
-- DevOps community for best practices and guidance
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/improvement`)
+3. Commit your changes (`git commit -m 'Add improvement'`)
+4. Push to the branch (`git push origin feature/improvement`)
+5. Open a Pull Request
 
 ---
 
 ## 📞 Support
 
-For questions or issues:
-- Open an issue in this repository
-- Contact via GitHub profile
+For questions or issues related to this project:
+
+- 📫 Open an issue in the GitHub repository
+- 💬 Contact via GitHub profile
 
 ---
+
+<div align="center">
+
+**⭐ If you found this project helpful, please consider giving it a star! ⭐**
+
+Made with ❤️ by Ashik
+
+</div>
