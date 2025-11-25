@@ -415,11 +415,12 @@ wisecow-devops/
 │   ├── app_health_checker.sh         # Application health monitoring
 │   ├── automated_backup.sh           # Backup automation script
 │   └── backup.log                    # Backup operation logs
-├── screenshots/                       # Project demonstration screenshots
-├── Dockerfile                         # Container image definition
+├── screenshots/                      # Project demonstration screenshots
+├── Dockerfile                        # Container image definition
 ├── wisecow.sh                        # Main application script
 ├── LICENSE                           # MIT License
-└── README.md                         # This file
+└── README.md                         # Assessment file
+└── Document.md                       # This file
 ```
 
 ---
