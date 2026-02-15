@@ -10,6 +10,7 @@ Complete Kubernetes deployment of the Wisecow application—a bash-based web ser
 
 ### Running Application
 ![Application Running](screenshots/app_running_browser.png)
+
 *Wisecow application successfully running and serving HTTP traffic via exposed service*
 
 ![KubeArmor Components Running](screenshots/health_check.png)
